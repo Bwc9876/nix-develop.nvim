@@ -13,4 +13,8 @@
 :RiffShell --project-dir foo
 ```
 
-See [nix-develop.txt](doc/nix-develop.txt) for more information
+See [nix-develop.txt](doc/nix-develop.txt) for more information.
+
+## Fidget Progress
+
+This fork adds progress display via `fidget.nvim`, it requires that Fidget be installed to function.
