@@ -124,13 +124,30 @@ end
 function M.enter_dev_env(cmd, args)
   local opts = { output = "", stdout = loop.new_pipe() }
 
+  local progress = require("fidget.progress")
+
+  local handle = progress.handle.create({
+    title = "Nix Dev Shell",
+    message = "Evaluating and Building",
+    lsp_client = { name = "nix_develop_fake_lsp" },
+    percentage = 0,
+  })
+
   loop.spawn(cmd, {
     args = args,
     stdio = { nil, opts.stdout, nil },
   }, function(code, signal)
     if check(cmd, args, code, signal) then
+      handle.message = "Failed to activate shell"
+      handle:cancel()
       return
     end
+
+    handle:report({
+      title = "Nix Dev Shell",
+      message = "Activating",
+      percentage = 50,
+    })
 
     for name, value in pairs(vim.json.decode(opts.output)["variables"]) do
       if value.type == "exported" then
@@ -151,7 +168,8 @@ function M.enter_dev_env(cmd, args)
         end
       end
     end
-    notify("successfully entered development environment", levels.INFO)
+    handle.message = "Activated Nix Dev Shell"
+    handle:finish()
   end)
 
   read_stdout(opts)
